@@ -10,7 +10,52 @@ public class MySqlDbUtils
 
     public static List<T> ExecuteReader<T>(String connectionString, string commandText,
         object inputParams,
-        CommandType commandType = CommandType.StoredProcedure )  where T: new()
+        CommandType commandType = CommandType.StoredProcedure,
+        object outputParams = null,
+        string prefixVariableName="") where T : new() 
+    {
+        using IDbConnection connection = new MySqlConnection(connectionString);
+
+        IDbCommand command = connection.CreateCommand();
+        command.CommandText = commandText;
+        command.CommandType = commandType;
+
+        if (inputParams != null)
+        {
+            command.AddParametersFromObject(inputParams, prefixVariableName);
+        }
+        if (outputParams != null)
+        {
+            command.AddParametersFromObject(outputParams, prefixVariableName , ParameterDirection.Output);
+        }
+
+
+        connection.Open();
+
+        var reader = command.ExecuteReader();
+
+
+        List<T> result = reader.ConvertReaderToList<T>();
+
+
+        if (outputParams != null)
+        {
+            //read parameters 
+            command.ReadOutputParameters(outputParams);
+        }
+        
+
+        connection.Close();
+
+        return result;
+    }
+
+
+    public static List<DataTable> ExecuteReaderDataTable(String connectionString, string commandText,
+        object inputParams,
+        CommandType commandType = CommandType.StoredProcedure,
+        object outputParams = null,
+        string prefixVariableName = "") 
     {
         using IDbConnection connection = new MySqlConnection(connectionString);
 
@@ -22,6 +67,10 @@ public class MySqlDbUtils
         {
             command.AddParametersFromObject(inputParams);
         }
+        if (outputParams != null)
+        {
+            command.AddParametersFromObject(outputParams,prefixVariableName, ParameterDirection.Output);
+        }
 
 
         connection.Open();
@@ -29,9 +78,23 @@ public class MySqlDbUtils
         var reader = command.ExecuteReader();
 
 
-        List<T> result = reader.ConvertReaderToList<T>();
+        List<DataTable> result = new List<DataTable>();
 
-        
+        while (!reader.IsClosed)
+        {
+            DataTable dt = new DataTable();
+            dt.Load(reader);
+
+            result.Add(dt);
+        }
+
+
+        if (outputParams != null)
+        {
+            //read parameters 
+            command.ReadOutputParameters(outputParams);
+        }
+
 
         connection.Close();
 

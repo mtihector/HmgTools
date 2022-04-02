@@ -9,5 +9,9 @@ namespace HmgTools.DataBase.MySql.Tests
     internal class ConnectionConst
     {
         public const string SecurityConnection = "Security";
+
+        public const string ClassicModelsConnection = "ClassicModels";
+
+        
     }
 }

@@ -57,14 +57,14 @@ namespace HmgTools.DataBase
 
         }
 
-        public DbType? GetTypeFromCLR(object clrType)
+        public DbType? GetTypeFromCLR(Type clrType)
         {
 
-            Type? currentType = clrType.GetType();
+            //Type? currentType = clrType.GetType();
 
-            if (currentType != null && _typeMap.ContainsKey(currentType))
+            if (clrType != null && _typeMap.ContainsKey(clrType))
             {
-                return _typeMap[currentType];
+                return _typeMap[clrType];
             }
 
             return null;
